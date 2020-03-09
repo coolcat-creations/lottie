@@ -3,7 +3,7 @@ Plugin to embed bodymovin animations with lottie into Joomla
 
 You can find free animations on: https://lottiefiles.com/
 
-##Lottie Open Source animation tool by airbnb
+## Lottie Open Source animation tool by airbnb
 https://airbnb.design/lottie/
 
 "Easily add high-quality animation to any native app.
