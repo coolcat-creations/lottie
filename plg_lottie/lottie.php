@@ -41,7 +41,6 @@ class PlgContentLottie extends CMSPlugin
 
 		if (is_object($row))
 		{
-
 			$found = $this->lottieToAnimatation($row->text);
 		}
 
@@ -49,7 +48,6 @@ class PlgContentLottie extends CMSPlugin
 		{
 			$found = $this->lottieToAnimatation($row);
 		}
-
 
 		if ($found)
 		{
@@ -61,7 +59,6 @@ class PlgContentLottie extends CMSPlugin
 
 	protected function lottieToAnimatation(&$text)
 	{
-
 		if (stripos($text, '{/lottie}') === false)
 		{
 			return false;
@@ -116,7 +113,7 @@ class PlgContentLottie extends CMSPlugin
 	{
 		$attributes = [];
 		$attributes[] = 'id="lottie' . $lottieId . '"';
-    $attributes[] = 'data-name="lottie' . $lottieId . '"';
+        $attributes[] = 'data-name="lottie' . $lottieId . '"';
 
 		if (empty($params[0]) || !file_exists($params[0]))
 		{
@@ -137,23 +134,8 @@ class PlgContentLottie extends CMSPlugin
 
 		$replaceString = '<div class="lottie" ' . implode($attributes,' ') . '></div>';
 
-		/*	Saving this for possible later more flexible use of lottie
-		$replaceString .= "<script type='text/javascript'>\n";
-		$replaceString .= "var animation = bodymovin.loadAnimation({ \n";
-		$replaceString .= "container: document.getElementById(\"$lottieId\"), \n";
-		$replaceString .= "path: \"$path\",\n";
-		$replaceString .= "renderer: 'svg', \n";
-		$replaceString .= "loop: $loop, \n";
-		$replaceString .= "autoplay: $autoplay, \n";
-		$replaceString .= "name: \"$lottieId\", \n";
-		$replaceString .= "}) \n";
-		$replaceString .= "</script>\n";
-		*/
-
-
 		return $replaceString;
 	}
-
 }
 
 
