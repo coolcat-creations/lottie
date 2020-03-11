@@ -116,7 +116,7 @@ class PlgContentLottie extends CMSPlugin
 	{
 		$attributes = [];
 		$attributes[] = 'id="lottie' . $lottieId . '"';
-		$attributes[] = 'data-name="' . $lottieId . '"';
+    $attributes[] = 'data-name="lottie' . $lottieId . '"';
 
 		if (empty($params[0]) || !file_exists($params[0]))
 		{
