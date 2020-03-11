@@ -123,16 +123,16 @@ class PlgContentLottie extends CMSPlugin
 			return '';
 		}
 
-		$attributes[] = 'data-animation-path="' . JUri::base(true) . '/' . htmlentities($params[0]) . '"';
+		$attributes[] = 'data-animation-path="' . JUri::base(true) . '/' . htmlentities(trim($params[0])) . '"';
 
 		if (!empty($params[1]))
 		{
-			$attributes[] = 'style="height:' . htmlentities($params[2]) . '"';
+			$attributes[] = 'style="height:' . htmlentities(trim($params[2])) . '"';
 		}
 
 		if (!empty($params[2]))
 		{
-			$attributes[] = 'data-anim-loop="' . htmlentities($params[1]) . '"';
+			$attributes[] = 'data-anim-loop="' . htmlentities(trim($params[1])) . '"';
 		}
 
 		$replaceString = '<div class="lottie" ' . implode($attributes,' ') . '></div>';
