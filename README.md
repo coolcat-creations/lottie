@@ -1,6 +1,11 @@
 # lottie
 Plugin to embed bodymovin animations with lottie into Joomla
 
+Install the plugin, activate it and use following shortcode to embed lottie:
+{lottie}images/lottie/data.json,true,560px{/lottie}
+
+The first value is the relative path to your json file, second value is optional and defines if lottie is looped or not (true / false), third value is optional and for the container size.
+
 You can find free animations on: https://lottiefiles.com/
 
 ## Lottie Open Source animation tool by airbnb
