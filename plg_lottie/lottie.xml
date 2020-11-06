@@ -13,6 +13,7 @@
 	<files>
 		<filename plugin="lottie">lottie.php</filename>
 		<filename>index.html</filename>
+		<folder>tmpl</folder>
 	</files>
 
 	<media destination="plg_content_lottie" folder="media">
