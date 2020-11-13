@@ -1,19 +1,25 @@
 <?php
 /**
  * @package     Joomla.Plugin
- * @subpackage  Fields.CCCyoutubefield
+ * @subpackage  Content.Lottie
  *
  * @copyright   Copyright (C) 2017 Coolcat-Creations.com, Elisa Foltyn.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @license     GNU General Public License version 3 or later; see LICENSE.txt
  */
-
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\HTML\HTMLHelper;
 
 defined('_JEXEC') or die;
 
-jimport('joomla.plugin.plugin');
+use Joomla\CMS\Layout\FileLayout;
+use Joomla\CMS\Plugin\CMSPlugin;
 
+/**
+ * Class to implemet lottie support.
+ *
+ * @package     Joomla.Plugin
+ * @subpackage  Content.Lottie
+ *
+ * @since  1.0.0
+ */
 class PlgContentLottie extends CMSPlugin
 {
 	/**
@@ -23,6 +29,15 @@ class PlgContentLottie extends CMSPlugin
 	 * @since   1.0.0
 	 */
 	const PLUGIN_REGEX = "@(<(\w+)[^>]*>)?{lottie}(.*?){/lottie}(</\\2>)?@";
+
+	/**
+	 * Global application object
+	 *
+	 * @var     JApplication
+	 * @since   1.0.1
+	 */
+	protected $app;
+
 	/**
 	 * Set counter
 	 *
@@ -31,43 +46,58 @@ class PlgContentLottie extends CMSPlugin
 	 */
 	private static $count = 0;
 
-	public function onContentPrepare($context, &$row, $page = 0)
+
+	/**
+	 * Plugin to generates Forms within content
+	 *
+	 * @param   string   $context  The context of the content being passed to the plugin.
+	 * @param   object   $article  The article object.  Note $article->text is also available
+	 * @param   mixed    $params   The article params
+	 * @param   integer  $page     The 'page' number
+	 *
+	 * @return   void
+	 * @since    1.0.0
+	 */
+	public function onContentPrepare($context, &$article, &$params, $page = 0)
 	{
 		// Don't run this plugin when the content is being indexed
-		if ($context == 'com_finder.indexer')
+		if ($context == 'com_finder.indexer'
+			// Don't run this plugin when we edit an custom module in frontend
+			|| $this->app->input->getCmd('option') == 'com_config'
+			// Don't run this plugin when we edit the content in frontend
+			|| $this->app->input->getCmd('layout') == 'edit')
 		{
-			return true;
+			return;
 		}
 
-		if (is_object($row))
+		if (is_object($article)
+			&& strpos($article->text, '{/lottie}') !== false)
 		{
-			$found = $this->lottieToAnimatation($row->text);
+			$this->lottieToAnimatation($article->text);
 		}
 
-		if (is_string($row))
+		if (is_string($article)
+			&& strpos($article, '{/lottie}') !== false)
 		{
-			$found = $this->lottieToAnimatation($row);
+			$this->lottieToAnimatation($article);
 		}
-
-		if ($found)
-		{
-			HTMLHelper::_('script', 'plg_content_lottie/lottie.min.js', array('version' => 'auto', 'relative' => true));
-		}
-
-		return true;
 	}
 
+	/**
+	 * Replace plugin call with lottie html
+	 *
+	 * @param   string  $text  Article content to parse
+	 *
+	 * @return  void
+	 *
+	 * @since  1.0.0
+	 */
 	protected function lottieToAnimatation(&$text)
 	{
-		if (stripos($text, '{/lottie}') === false)
-		{
-			return false;
-		}
-
 		// Get all matches or return
 		if (!preg_match_all(self::PLUGIN_REGEX, $text, $matches))
 		{
-			return false;
+			return;
 		}
 
 		// Exclude <code/> and <pre/> matches
@@ -91,50 +121,90 @@ class PlgContentLottie extends CMSPlugin
 
 		$pluginCalls = $matches[0];
 		$callParams  = $matches[3];
+		$layout      = new FileLayout('default');
+
+		// Define include path for layout and override
+		$includePaths = array(
+			JPATH_THEMES . '/' . $this->app->getTemplate() . '/html/plg_content_lottie',
+			JPATH_PLUGINS . '/content/lottie/tmpl',
+		);
+
+		$layout->setIncludePaths($includePaths);
 
 		foreach($pluginCalls as $key => $match)
 		{
-			$counter = self::$count;
-			$userParams = explode(',', $callParams[$key]);
+			$replacement = '';
 
-			$replacement = $this->replaceLottie($counter, $userParams);
+			$displayData = array(
+				'counter'    => self::$count,
+				'attributes' => $this->getLottieAttributes($callParams[$key]),
+			);
+
+			if (!empty($displayData['attributes']))
+			{
+				$replacement = $layout->render($displayData);
+
+				// Increment conter for unique lottie id
+				self::$count++;
+			}
 
 			$pos = strpos($text, $match);
 			$end = strlen($match);
 
 			$text = substr_replace($text, $replacement, $pos, $end);
-			self::$count++;
 		}
-
-		return true;
 	}
 
-	protected function replaceLottie($lottieId, $params)
+	/**
+	 * Generate the attributes of lottie output container
+	 *
+	 * @param   string  $userParams  Comma separated values for:
+	 *                               1. Path to lottie json file
+	 *                               2. Boolean for loop (true/false)
+	 *                               3. Value for height. If is numeric, automaticaly 'px' will be added.
+	 *
+	 * @return  array
+	 *
+	 * @since  1.0.1
+	 */
+	private function getLottieAttributes($userParams)
 	{
-		$attributes = [];
-		$attributes[] = 'id="lottie' . $lottieId . '"';
-        $attributes[] = 'data-name="lottie' . $lottieId . '"';
+		$attributes = array();
 
-		if (empty($params[0]) || !file_exists($params[0]))
+		$params    = explode(',', $userParams);
+		$params    = array_map('trim', $params);
+
+		if (empty($params[0]) || !file_exists(JPATH_ROOT . '/' . $params[0]))
 		{
-			return '';
+			return $attributes;
 		}
 
-		$attributes[] = 'data-animation-path="' . JUri::base(true) . '/' . htmlentities(trim($params[0])) . '"';
+		$params    = array_map('htmlentities', $params);
+		$params[0] = ltrim($params[0], '\\/');
+
+		$attributes['id']                  = 'lottie' . self::$count;
+		$attributes['data-name']           = $attributes['id'];
+		$attributes['data-animation-path'] = rtrim(JUri::base(true), '\\/') . '/' . $params[0];
+
+		// Set default value for animation loop
+		$attributes['data-anim-loop'] = false;
 
 		if (!empty($params[1]))
 		{
-			$attributes[] = 'style="height:' . htmlentities(trim($params[2])) . '"';
+			$attributes['data-anim-loop'] = true;
 		}
 
 		if (!empty($params[2]))
 		{
-			$attributes[] = 'data-anim-loop="' . htmlentities(trim($params[1])) . '"';
+			if (is_numeric($params[2]))
+			{
+				$params[2] .= 'px';
+			}
+
+			$attributes['style'] = 'height:' . $params[2]. ';';
 		}
 
-		$replaceString = '<div class="lottie" ' . implode($attributes,' ') . '></div>';
-
-		return $replaceString;
+		return $attributes;
 	}
 }
 

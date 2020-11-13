@@ -2,29 +2,23 @@
 <extension version="3.8" type="plugin" method="upgrade" group="content">
 	<name>PLG_CONTENT_LOTTIE</name>
 	<author>Elisa Foltyn</author>
-	<creationDate>01.02.2020</creationDate>
+	<creationDate>26.10.2020</creationDate>
 	<copyright>(C) Elisa Foltyn COOLCAT creations. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later</license>
 	<authorEmail>contact@coolcat-creations.com</authorEmail>
 	<authorUrl>coolcat-creations.com</authorUrl>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<description>PLG_CONTENT_LOTTIE_XML_DESCRIPTION</description>
 
 	<files>
 		<filename plugin="lottie">lottie.php</filename>
 		<filename>index.html</filename>
+		<folder>tmpl</folder>
 	</files>
 
 	<media destination="plg_content_lottie" folder="media">
 		<folder>js</folder>
 	</media>
-
-	<config>
-		<fields name="params">
-			<fieldset name="basic">
-			</fieldset>
-		</fields>
-	</config>
 
 	<languages folder="language">
 		<language tag="en-GB">en-GB/en-GB.plg_content_lottie.ini</language>
@@ -34,6 +28,6 @@
 	</languages>
 
 	<updateservers>
-		<server type="extension" priority="1" name="Lottie Update Server"></server>
+		<server type="extension" priority="1" name="Lottie Update Server">https://raw.githubusercontent.com/coolcat-creations/lottie/master/update.xml</server>
 	</updateservers>
 </extension>
